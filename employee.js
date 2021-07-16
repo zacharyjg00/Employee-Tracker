@@ -59,7 +59,7 @@ async function getRoles() {
                     currentRoles.push({ id: element.id, title: element.title });
                 });
                 resolve(currentRoles);
-        });
+            });
     });
 }
 
@@ -96,12 +96,30 @@ function getRoleTitles(arr) {
     return rolesArr;
 }
 
+function getManagerId(managerArr, managerName) {
+    for (managerData of managerArr) {
+        let manager = `${managerData.first_name} ${managerData.last_name}`;
+        if (manager == managerName) {
+            return managerData.id;
+        }
+    }
+}
+
+function getRoleId(roleArr, roleName) {
+    for (roleData of roleArr) {
+        let role = `${roleData.title}`;
+        if (role == roleName) {
+            return roleData.id;
+        }
+    }
+}
+
 async function addEmployee() {
     let currentRoles = await getRoles();
     let currentManagers = await getManagers();
     // console.log(currentManagers);
     // console.log(currentRoles);
-    
+
     inquirer.prompt([
         {
             type: "input",
@@ -131,8 +149,8 @@ async function addEmployee() {
             {
                 first_name: first_name,
                 last_name: last_name,
-                role_id: role,
-                manager_id: (currentManagers.indexOf(manager) + 1),
+                role_id: getRoleId(currentRoles, role),
+                manager_id: getManagerId(currentManagers, manager),
             },
             (err) => {
                 if (err) throw err;
