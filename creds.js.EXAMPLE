@@ -1,0 +1,9 @@
+module.exports = {
+    config: {
+      host: 'localhost',
+      port: 3306,
+      user: 'root',
+      password: "", // Put in your password for your mySQL root
+      database: 'employee_db'
+    }
+  }
