@@ -1,0 +1,24 @@
+{
+  "name": "Employee-Tracker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "creds.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zacharyjg00/Employee-Tracker.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/zacharyjg00/Employee-Tracker/issues"
+  },
+  "homepage": "https://github.com/zacharyjg00/Employee-Tracker#readme",
+  "dependencies": {
+    "inquirer": "^8.1.2",
+    "mysql": "^2.18.1"
+  }
+}
