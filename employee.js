@@ -81,11 +81,19 @@ function getManagers() {
 }
 
 function getManagerNames(arr) {
-    let nameArr = []
-    arr.forEach(element => {
-        nameArr.push(element.first_name + element.last_name);
+    let nameArr = ["None"];
+    arr.forEach(manager => {
+        nameArr.push(`${manager.first_name} ${manager.last_name}`);
     });
-    console.log(nameArr);
+    return nameArr;
+}
+
+function getRoleTitles(arr) {
+    let rolesArr = [];
+    arr.forEach(role => {
+        rolesArr.push(`${role.title}`);
+    });
+    return rolesArr;
 }
 
 async function addEmployee() {
@@ -93,7 +101,7 @@ async function addEmployee() {
     let currentManagers = await getManagers();
     // console.log(currentManagers);
     // console.log(currentRoles);
-
+    
     inquirer.prompt([
         {
             type: "input",
@@ -109,13 +117,13 @@ async function addEmployee() {
             type: "list",
             message: "What is the employee's role?",
             name: "role",
-            choices: currentRoles
+            choices: getRoleTitles(currentRoles)
         },
         {
             type: "list",
             message: "Who is the employee's manager?",
             name: "manager",
-            choices: currentManagers
+            choices: getManagerNames(currentManagers)
         },
     ]).then(({ first_name, last_name, role, manager }) => {
         connection.query(
@@ -123,7 +131,7 @@ async function addEmployee() {
             {
                 first_name: first_name,
                 last_name: last_name,
-                role_id: (currentRoles.indexOf(role) + 1),
+                role_id: role,
                 manager_id: (currentManagers.indexOf(manager) + 1),
             },
             (err) => {
