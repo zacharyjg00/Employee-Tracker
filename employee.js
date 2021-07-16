@@ -114,11 +114,22 @@ function getRoleId(roleArr, roleName) {
     }
 }
 
+function viewEmployees() {
+    connection.query(
+        `select r.title, r.id from role r;`, (err, results) => {
+            if (err) {
+                reject(new Error(err.message));
+            }
+            results.forEach(element => {
+                currentRoles.push({ id: element.id, title: element.title });
+            });
+            resolve(currentRoles);
+        });
+}
+
 async function addEmployee() {
     let currentRoles = await getRoles();
     let currentManagers = await getManagers();
-    // console.log(currentManagers);
-    // console.log(currentRoles);
 
     inquirer.prompt([
         {
@@ -161,8 +172,6 @@ async function addEmployee() {
     });
 }
 
-// getManagers();
-// getRoles();
 start();
 
 
