@@ -26,10 +26,11 @@ function start() {
                 break;
 
             case "View Employees By Department":
+                viewEmployeesByDepartment();
                 break;
 
             case "Add Employee":
-                addEmployee()
+                addEmployee();
                 break;
 
             case "Update Employee Role":
@@ -48,7 +49,7 @@ function start() {
     });
 }
 
-async function getRoles() {
+function getRoles() {
     let currentRoles = [];
     return new Promise((resolve, reject) => {
         connection.query(
@@ -77,6 +78,22 @@ function getManagers() {
                 currentManagers.push({ id: element.id, first_name: element.first_name, last_name: element.last_name });
             });
             resolve(currentManagers);
+        });
+    });
+}
+
+function getDepartments() {
+    let currentDepartments = [];
+    return new Promise((resolve, reject) => {
+        connection.query(
+            `select d.name from department d;`, (err, results) => {
+            if (err) {
+                reject(new Error(err.message));
+            }
+            results.forEach(element => {
+                currentDepartments.push({ name: element.name });
+            });
+            resolve(currentDepartments);
         });
     });
 }
@@ -117,7 +134,7 @@ function getRoleId(roleArr, roleName) {
 
 function viewAllEmployees() {
     connection.query(
-        `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as 'manager' from employee e
+        `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
         inner join role r on e.role_id = r.id 
         inner join department d on r.department_id = d.id
         left join employee ee on e.manager_id = ee.id;`, (err, result) => {
@@ -127,6 +144,28 @@ function viewAllEmployees() {
     });
 }
 
+async function viewEmployeesByDepartment() {
+    let currentDepartments = await getDepartments();
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What department would you like to view?",
+            name: "departmentName",
+            choices: currentDepartments
+        },
+    ]).then(({ departmentName }) => {
+        connection.query(
+            `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
+            inner join role r on e.role_id = r.id 
+            inner join department d on r.department_id = d.id
+            left join employee ee on e.manager_id = ee.id
+            where d.name = '${departmentName}';`, (err, result) => {
+            if (err) throw err;
+            console.table(result);
+            start();
+        });
+    });
+}
 
 async function addEmployee() {
     let currentRoles = await getRoles();
