@@ -1,5 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
+const cTable = require("console.table");
 const { config } = require("./creds");
 
 const connection = mysql.createConnection(config);
@@ -11,7 +12,6 @@ connection.connect((err) => {
 });
 
 function start() {
-    console.log("Welcome to the Employee Tracker!")
     inquirer.prompt(
         {
             type: "list",
@@ -22,6 +22,7 @@ function start() {
     ).then(({ choice }) => {
         switch (choice) {
             case "View All Employees":
+                viewAllEmployees();
                 break;
 
             case "View Employees By Department":
@@ -114,18 +115,18 @@ function getRoleId(roleArr, roleName) {
     }
 }
 
-function viewEmployees() {
+function viewAllEmployees() {
     connection.query(
-        `select r.title, r.id from role r;`, (err, results) => {
-            if (err) {
-                reject(new Error(err.message));
-            }
-            results.forEach(element => {
-                currentRoles.push({ id: element.id, title: element.title });
-            });
-            resolve(currentRoles);
-        });
+        `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as 'manager' from employee e
+        inner join role r on e.role_id = r.id 
+        inner join department d on r.department_id = d.id
+        left join employee ee on e.manager_id = ee.id;`, (err, result) => {
+        if (err) throw err;
+        console.table(result);
+        start();
+    });
 }
+
 
 async function addEmployee() {
     let currentRoles = await getRoles();
@@ -172,6 +173,7 @@ async function addEmployee() {
     });
 }
 
+console.log("Welcome to the Employee Tracker!");
 start();
 
 
