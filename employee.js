@@ -349,7 +349,6 @@ function addDepartment() {
 async function updateRole() {
     let currentRoles = await getRoles();
     let currentEmployees = await getEmployees();
-    console.log(currentEmployees);
 
     inquirer.prompt([
         {
