@@ -38,6 +38,7 @@ function start() {
                 break;
 
             case "Update Employee Role":
+                updateRole();
                 break;
 
             case "Add Role":
@@ -52,6 +53,22 @@ function start() {
                 connection.end();
                 break;
         }
+    });
+}
+
+function getEmployees() {
+    let currentEmployees = [];
+    return new Promise((resolve, reject) => {
+        connection.query(
+            `select e.id, e.first_name, e.last_name, e.role_id from employee e;`, (err, results) => {
+                if (err) {
+                    reject(new Error(err.message));
+                }
+                results.forEach(element => {
+                    currentEmployees.push({ id: element.id, first_name: element.first_name, last_name: element.last_name, role_id: element.role_id });
+                });
+                resolve(currentEmployees);
+            });
     });
 }
 
@@ -104,8 +121,11 @@ function getDepartments() {
     });
 }
 
-function getManagerNames(arr) {
-    let nameArr = ["None"];
+function getEmployeeNames(arr, managerOrNot) {
+    let nameArr = [];
+    if (managerOrNot) {
+        nameArr.push("None");
+    }
     arr.forEach(manager => {
         nameArr.push(`${manager.first_name} ${manager.last_name}`);
     });
@@ -137,11 +157,11 @@ function getDepartmentId(departmentArr, departmentName) {
     }
 }
 
-function getManagerId(managerArr, managerName) {
-    for (managerData of managerArr) {
-        let manager = `${managerData.first_name} ${managerData.last_name}`;
-        if (manager == managerName) {
-            return managerData.id;
+function getEmployeeId(employeeArr, employeeName) {
+    for (employeeData of employeeArr) {
+        let employee = `${employeeData.first_name} ${employeeData.last_name}`;
+        if (employee == employeeName) {
+            return employeeData.id;
         }
     }
 }
@@ -238,7 +258,7 @@ async function addEmployee() {
             type: "list",
             message: "Who is the employee's manager?",
             name: "manager",
-            choices: getManagerNames(currentManagers)
+            choices: getEmployeeNames(currentManagers, true)
         },
     ]).then(({ first_name, last_name, role, manager }) => {
         connection.query(
@@ -247,7 +267,7 @@ async function addEmployee() {
                 first_name: first_name,
                 last_name: last_name,
                 role_id: getRoleId(currentRoles, role),
-                manager_id: getManagerId(currentManagers, manager),
+                manager_id: getEmployeeId(currentManagers, manager),
             },
             (err) => {
                 if (err) throw err;
@@ -317,33 +337,36 @@ function addDepartment() {
     });
 }
 
+async function updateRole() {
+    let currentRoles = await getRoles();
+    let currentEmployees = await getEmployees();
+    console.log(currentEmployees);
+
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "Which employee would you like to update?",
+            name: "employee",
+            choices: getEmployeeNames(currentEmployees, false)
+        },
+        {
+            type: "list",
+            message: "What is the employee's new role?",
+            name: "role",
+            choices: getRoleTitles(currentRoles)
+        }
+    ]).then(({ employee, role }) => {
+        connection.query(
+            `update employee e set e.role_id = ${getRoleId(currentRoles, role)} 
+            where e.id = ${getEmployeeId(currentEmployees, employee)}`,
+            (err) => {
+                if (err) throw err;
+                console.log('Successfully changed role!');
+                start();
+            }
+        );
+    });
+}
+
 console.log("Welcome to the Employee Tracker!");
 start();
-
-
-// let getManagers = () => {
-//     let query = 'SELECT id,first_name, last_name, manager_id,role_id FROM employee';
-//     query += ' WHERE manager_id IS NULL;';
-//     return new Promise((resolve, reject) => {
-//         connection.query(query, (err, res) => {
-//             if (err) {
-//                 reject(new Error(err.message));
-//             }
-//             let employees = [];
-//             res.forEach(({ id, first_name, last_name, manager_id, roleId }) => {
-//                 let emp = new Employee(id, first_name, last_name, manager_id, roleId);
-//                 employees.push(emp);
-//             });
-//             resolve(employees);
-//         })
-//     });
-// };
-
-// case 'View All Managers':
-//                     getManagers()
-//                         .then((response) => {
-//                             displayResults(response);
-//                         })
-//                         .then(() => runSearch())
-//                         .catch((err) => console.error('Promise rejected:', err));
-//                     break;
