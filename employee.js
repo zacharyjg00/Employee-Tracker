@@ -1,16 +1,18 @@
+// Requiring all of the required dependencies to run
 const inquirer = require("inquirer");
 const mysql = require("mysql");
 const cTable = require("console.table");
 const { config } = require("./creds");
 
+// We create a connection to the mySQL database. You should load up the employeeDb.sql in mySQL workbench to initialize the database as well as the seeded data
 const connection = mysql.createConnection(config);
-
 connection.connect((err) => {
     if (err) {
         console.log(err);
     }
 });
 
+// This function displays all of the features of the app as options
 function start() {
     inquirer.prompt(
         {
@@ -50,12 +52,14 @@ function start() {
                 break;
 
             case "Exit":
+                // Exiting ends the mySQL connection to the database
                 connection.end();
                 break;
         }
     });
 }
 
+// This set of functions gets and returns arrays of the specified data from the database using promises
 function getEmployees() {
     let currentEmployees = [];
     return new Promise((resolve, reject) => {
@@ -121,6 +125,7 @@ function getDepartments() {
     });
 }
 
+// This set of functions grabs the names of the data and returns an array of just the names to be displayed as choices in inquirer
 function getEmployeeNames(arr, managerOrNot) {
     let nameArr = [];
     if (managerOrNot) {
@@ -148,15 +153,7 @@ function getDepartmentNames(arr) {
     return departmentArr;
 }
 
-function getDepartmentId(departmentArr, departmentName) {
-    for (departmentData of departmentArr) {
-        let department = `${departmentData.name}`;
-        if (department == departmentName) {
-            return departmentData.id;
-        }
-    }
-}
-
+// This set of functions takes in the name of the data and then grabs the associated id
 function getEmployeeId(employeeArr, employeeName) {
     for (employeeData of employeeArr) {
         let employee = `${employeeData.first_name} ${employeeData.last_name}`;
@@ -175,6 +172,16 @@ function getRoleId(roleArr, roleName) {
     }
 }
 
+function getDepartmentId(departmentArr, departmentName) {
+    for (departmentData of departmentArr) {
+        let department = `${departmentData.name}`;
+        if (department == departmentName) {
+            return departmentData.id;
+        }
+    }
+}
+
+// This set of functions displays the data using console.table
 function viewAllEmployees() {
     connection.query(
         `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
@@ -184,29 +191,6 @@ function viewAllEmployees() {
         if (err) throw err;
         console.table(result);
         start();
-    });
-}
-
-async function viewEmployeesByDepartment() {
-    let currentDepartments = await getDepartments();
-    inquirer.prompt([
-        {
-            type: "list",
-            message: "What department would you like to view?",
-            name: "departmentName",
-            choices: getDepartmentNames(currentDepartments)
-        },
-    ]).then(({ departmentName }) => {
-        connection.query(
-            `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
-            inner join role r on e.role_id = r.id 
-            inner join department d on r.department_id = d.id
-            left join employee ee on e.manager_id = ee.id
-            where d.name = '${departmentName}';`, (err, result) => {
-            if (err) throw err;
-            console.table(result);
-            start();
-        });
     });
 }
 
@@ -233,6 +217,30 @@ async function viewEmployeesByRole() {
     });
 }
 
+async function viewEmployeesByDepartment() {
+    let currentDepartments = await getDepartments();
+    inquirer.prompt([
+        {
+            type: "list",
+            message: "What department would you like to view?",
+            name: "departmentName",
+            choices: getDepartmentNames(currentDepartments)
+        },
+    ]).then(({ departmentName }) => {
+        connection.query(
+            `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
+            inner join role r on e.role_id = r.id 
+            inner join department d on r.department_id = d.id
+            left join employee ee on e.manager_id = ee.id
+            where d.name = '${departmentName}';`, (err, result) => {
+            if (err) throw err;
+            console.table(result);
+            start();
+        });
+    });
+}
+
+// This set of functions adds the specified type of data to the database
 async function addEmployee() {
     let currentRoles = await getRoles();
     let currentManagers = await getManagers();
@@ -337,6 +345,7 @@ function addDepartment() {
     });
 }
 
+// This function updates the role of a specific employee
 async function updateRole() {
     let currentRoles = await getRoles();
     let currentEmployees = await getEmployees();
@@ -368,5 +377,6 @@ async function updateRole() {
     });
 }
 
+// Here is the initial call to start the app as well as a starting message
 console.log("Welcome to the Employee Tracker!");
 start();
