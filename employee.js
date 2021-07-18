@@ -184,7 +184,7 @@ function getDepartmentId(departmentArr, departmentName) {
 // This set of functions displays the data using console.table
 function viewAllEmployees() {
     connection.query(
-        `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
+        `select e.id, e.first_name, e.last_name, r.title, d.name as "department", r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
         inner join role r on e.role_id = r.id 
         inner join department d on r.department_id = d.id
         left join employee ee on e.manager_id = ee.id;`, (err, result) => {
@@ -205,7 +205,7 @@ async function viewEmployeesByRole() {
         },
     ]).then(({ roleTitle }) => {
         connection.query(
-            `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
+            `select e.id, e.first_name, e.last_name, r.title, d.name as "department", r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
             inner join role r on e.role_id = r.id 
             inner join department d on r.department_id = d.id
             left join employee ee on e.manager_id = ee.id
@@ -228,7 +228,7 @@ async function viewEmployeesByDepartment() {
         },
     ]).then(({ departmentName }) => {
         connection.query(
-            `select e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
+            `select e.id, e.first_name, e.last_name, r.title, d.name as "department", r.salary, concat(ee.first_name, " ", ee.last_name) as "manager" from employee e
             inner join role r on e.role_id = r.id 
             inner join department d on r.department_id = d.id
             left join employee ee on e.manager_id = ee.id
