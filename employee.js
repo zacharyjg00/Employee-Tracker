@@ -45,6 +45,7 @@ function start() {
                 break;
 
             case "Add Department":
+                addDepartment();
                 break;
 
             case "Exit":
@@ -263,7 +264,7 @@ async function addRole() {
     inquirer.prompt([
         {
             type: "input",
-            message: "What is the role's title?",
+            message: "What is the new role's title?",
             name: "title"
         },
         {
@@ -276,7 +277,7 @@ async function addRole() {
             message: "What is the department of this role?",
             name: "department",
             choices: getDepartmentNames(currentDepartments)
-        }, 
+        },
     ]).then(({ title, salary, department }) => {
         connection.query(
             'insert into role set ?',
@@ -288,6 +289,28 @@ async function addRole() {
             (err) => {
                 if (err) throw err;
                 console.log('Successfully added role!');
+                start();
+            }
+        );
+    });
+}
+
+function addDepartment() {
+    inquirer.prompt([
+        {
+            type: "input",
+            message: "What is the new department's name?",
+            name: "name"
+        },
+    ]).then(({ name }) => {
+        connection.query(
+            'insert into department set ?',
+            {
+                name: name
+            },
+            (err) => {
+                if (err) throw err;
+                console.log('Successfully added department!');
                 start();
             }
         );
